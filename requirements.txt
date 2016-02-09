@@ -1,2 +1,0 @@
-basegateway==0.7
-GitPython
