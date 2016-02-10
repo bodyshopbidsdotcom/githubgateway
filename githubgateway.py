@@ -1,38 +1,14 @@
 from basegateway import APIGateway
-import git
-import re
 import os
 from datetime import datetime
 from operator import itemgetter
 import copy
 
-def owner_and_repo():
-  g = git.cmd.Git(os.getcwd())
-  remotes = g.execute(['git','remote','-v'])
-  match = re.search('github\.com(?::|\/)([\w\-]+)\/([\w\-]+)\.git \(fetch\)', remotes)
-  owner = None
-  repo = None
-  if match is not None:
-    owner = match.group(1).encode('ascii')
-    repo = match.group(2).encode('ascii')
-
-  return owner, repo
-
-def current_branch():
-  return str(git.Repo(os.getcwd()).active_branch)
-
-def issue_number_from_branch():
-  ret = None
-  branch = current_branch()
-  match = re.search('^(\d+)\-', branch)
-  if match is not None:
-    ret = int(match.group(1))
-  return ret
-
 class GithubAPIGateway(APIGateway):
-  def __init__(self, token=os.environ.get('GITHUB_TOKEN')):
+  def __init__(self, owner, repo, token=os.environ.get('GITHUB_TOKEN')):
     APIGateway.__init__(self)
-    self._owner, self._repo = owner_and_repo()
+    self._owner = owner
+    self._repo = repo
     self._cache = {}
     self._host_url = 'https://api.github.com'
     self._api = {
@@ -126,40 +102,38 @@ class GithubAPIGateway(APIGateway):
       data.update({'assignee': self.call('user')[0]['login']})
     return self.call('create_issue', owner=self._owner, repo=self._repo, data=data)[0]
 
-  def get_open_pr(self):
+  def get_open_pr(self, branch_name):
     ret = self._cache.get('pr')
     if ret is not None:
       return ret
 
-    branch = str(current_branch())
     prs = self.call('list_pr', owner=self._owner, repo=self._repo, data={
-      'head': branch
+      'head': branch_name
     })[0]
 
     for pr in prs:
-      if pr['head']['ref'] == branch:
+      if pr['head']['ref'] == branch_name:
         self._cache['pr'] = pr
         return pr
 
     return None
 
-  def get_current_issue(self):
+  def get_issue(self, issue_number):
     ret = self._cache.get('issue')
     if ret is not None:
       return ret
 
-    issue_number = issue_number_from_branch()
     ret = self.call('list_issue', owner=self._owner, repo=self._repo, number=issue_number)[0]
 
     self._cache['issue'] = ret
     return ret
 
-  def get_pr_comments(self):
+  def get_pr_comments(self, branch_name):
     ret = self._cache.get('pr_comments')
     if ret is not None:
       return ret
 
-    pr = self.get_open_pr()
+    pr = self.get_open_pr(branch_name)
     ret = None
     if pr is not None:
       ret = self.call('list_issue_comments', owner=self._owner, repo=self._repo, number=pr['number'])[0]
@@ -169,12 +143,12 @@ class GithubAPIGateway(APIGateway):
     self._cache['pr_comments'] = ret
     return ret
 
-  def get_pr_commits(self):
+  def get_pr_commits(self, branch_name):
     ret = self._cache.get('pr_commits')
     if ret is not None:
       return ret
 
-    pr = self.get_open_pr()
+    pr = self.get_open_pr(branch_name)
     if pr is not None:
       ret = self.call('list_pr_commits', owner=self._owner, repo=self._repo, number=pr['number'])[0]
     else:
@@ -183,8 +157,8 @@ class GithubAPIGateway(APIGateway):
     self._cache['pr_commits'] = ret
     return ret
 
-  def merge_pr(self):
-    pr = self.get_open_pr()
+  def merge_pr(self, branch_name):
+    pr = self.get_open_pr(branch_name)
     if pr is not None:
       return self.call('merge_pr', owner=self._owner, repo=self._repo, number=pr['number'], data={})[0]
     else:
@@ -200,12 +174,12 @@ class GithubAPIGateway(APIGateway):
     self._cache['user'] = ret
     return ret
 
-  def get_pr_review_comments(self):
+  def get_pr_review_comments(self, branch_name):
     ret = self._cache.get('pr_review_comments')
     if ret is not None:
       return ret
 
-    pr = self.get_open_pr()
+    pr = self.get_open_pr(branch_name)
     if pr is not None:
       ret = self.call('list_pr_review_comments', owner=self._owner, repo=self._repo, number=pr['number'])[0]
     else:
@@ -214,9 +188,9 @@ class GithubAPIGateway(APIGateway):
     self._cache['pr_review_comments'] = ret
     return ret
 
-  def get_pr_and_review_comments(self):
-    review_comments = self.get_pr_review_comments()
-    pr_comments = self.get_pr_comments()
+  def get_pr_and_review_comments(self, branch_name):
+    review_comments = self.get_pr_review_comments(branch_name)
+    pr_comments = self.get_pr_comments(branch_name)
     comments = {}
     for comment_original in (review_comments + pr_comments):
       comment = copy.deepcopy(comment_original)

@@ -2,17 +2,16 @@ from distutils.core import setup
 
 setup(
   name = 'githubgateway',
-  version = '0.2',
+  version = '0.3',
   py_modules = ['githubgateway'],
   description = 'A class to make api calls to github',
   author = 'Snapsheet',
   author_email = 'technotifications@snapsheet.me',
   url = 'https://github.com/bodyshopbidsdotcom/githubgateway',
-  download_url = 'https://github.com/bodyshopbidsdotcom/githubgateway/tarball/0.2',
+  download_url = 'https://github.com/bodyshopbidsdotcom/githubgateway/tarball/0.3',
   keywords = ['api', 'gateway', 'http', 'REST'],
   install_requires = [
-    'basegateway==0.7',
-    'GitPython==1.0.1'
+    'basegateway==0.7'
   ],
   classifiers = [
     "Topic :: Internet :: WWW/HTTP",
