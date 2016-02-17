@@ -215,15 +215,15 @@ class GithubAPIGateway(APIGateway):
   def labels_exist(self, labels):
     results, status = self.get_labels()
     existing_labels = [label['name'] for label in results]
-    return set(labels) < set(existing_labels)
+    return set(labels) <= set(existing_labels)
 
-  def add_labels_to_issue(self, issue_number, data, force_label_creation):
+  def add_labels_to_issue(self, issue_number, data, force_label_creation=False):
     if force_label_creation or self.labels_exist(data):
       return self.call('add_labels_to_issue', owner=self._owner, repo=self._repo, number=issue_number, data=data)
     else:
       return { 'message' : 'One or more labels do not exist.' }, 404
 
-  def remove_label_from_issue(self, issue_number, label, remove_all_labels):
+  def remove_label_from_issue(self, issue_number, label, remove_all_labels=False):
     if remove_all_labels:
       return self.call('remove_all_labels_from_issue', owner=self._owner, repo=self._repo, number=issue_number)
     else:
