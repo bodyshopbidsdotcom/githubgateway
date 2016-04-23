@@ -51,6 +51,11 @@ class GithubAPIGateway(APIGateway):
         'method': 'GET',
         'valid_status': [200]
       },
+      'list_collaborators': {
+        'path': '/repos/{owner}/{repo}/collaborators',
+        'method': 'GET',
+        'valid_status': [200]
+      },
       'create_issue': {
         'path': '/repos/{owner}/{repo}/issues',
         'method': 'POST'
@@ -172,6 +177,17 @@ class GithubAPIGateway(APIGateway):
     ret = self.call('user')[0]
 
     self._cache['user'] = ret
+    return ret
+
+  def list_collaborators(self):
+    return self.call('list_collaborators', owner=self._owner, repo=self._repo)[0]
+
+  def list_collaborators_usernames(self):
+    ret = set()
+    for collaborator in self.list_collaborators():
+      if collaborator.get('login') is not None:
+        ret.add(collaborator['login'])
+
     return ret
 
   def get_pr_review_comments(self, branch_name):
