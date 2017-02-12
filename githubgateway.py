@@ -107,6 +107,13 @@ class GithubAPIGateway(APIGateway):
       data.update({'assignee': self.call('user')[0]['login']})
     return self.call('create_issue', owner=self._owner, repo=self._repo, data=data)[0]
 
+  def get_pr_from_branch(self, branch_name, state = 'open'):
+    prs = self.call('list_pr', owner=self._owner, repo=self._repo, params={
+      'head': '{0}:{1}'.format(self._owner, branch_name)
+    })[0]
+
+    return next(iter(prs or []), None)
+
   def get_open_pr(self, branch_name):
     ret = self._cache.get('pr')
     if ret is not None:
