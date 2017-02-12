@@ -31,6 +31,11 @@ class GithubAPIGateway(APIGateway):
         'method': 'GET',
         'valid_status': [200, 404]
       },
+      'list_statuses': {
+        'path': '/repos/{owner}/{repo}/commits/{ref}/statuses',
+        'method': 'GET',
+        'valid_status': [200]
+      },
       'add_labels_to_issue': {
         'path': '/repos/{owner}/{repo}/issues/{number}/labels',
         'method': 'POST',
@@ -129,6 +134,9 @@ class GithubAPIGateway(APIGateway):
         return pr
 
     return None
+
+  def get_statuses_for_sha(self, sha):
+    return self.call('list_statuses', owner=self._owner, repo=self._repo, ref=sha)[0]
 
   def get_issue(self, issue_number):
     ret = self._cache.get('issue')
