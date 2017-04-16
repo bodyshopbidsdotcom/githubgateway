@@ -80,6 +80,11 @@ class GithubAPIGateway(APIGateway):
         'method': 'GET',
         'valid_status': [200]
       },
+      'list_issues': {
+        'path': '/repos/{owner}/{repo}/issues',
+        'method': 'GET',
+        'valid_status': [200]
+      },
       'list_issue_comments': {
         'path': '/repos/{owner}/{repo}/issues/{number}/comments',
         'method': 'GET',
@@ -105,6 +110,9 @@ class GithubAPIGateway(APIGateway):
       'Authorization': 'token {0}'.format(token)
     }
     self._common_params = {}
+
+  def open_issues_with_labels(self, labels):
+    return self.call('list_issues', owner=self._owner, repo=self._repo, params={'state': 'open', 'labels': ','.join(labels)})[0]
 
   def create_issue(self, title, self_assign=False, data={}):
     data.update({'title': title})
