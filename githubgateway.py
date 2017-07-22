@@ -90,6 +90,11 @@ class GithubAPIGateway(APIGateway):
         'method': 'GET',
         'valid_status': [200]
       },
+      'create_issue_comment': {
+        'path': '/repos/{owner}/{repo}/issues/{number}/comments',
+        'method': 'POST',
+        'valid_status': [201]
+      },
       'list_issue_labels': {
         'path': '/repos/{owner}/{repo}/issues/{number}/labels',
         'method': 'GET',
@@ -126,6 +131,11 @@ class GithubAPIGateway(APIGateway):
     })[0]
 
     return next(iter(prs or []), None)
+
+  def get_open_prs(self):
+    return self.call('list_pr', owner=self._owner, repo=self._repo, data={
+      'state': 'open'
+    })
 
   def get_open_pr(self, branch_name):
     ret = self._cache.get('pr')
@@ -170,6 +180,10 @@ class GithubAPIGateway(APIGateway):
 
     self._cache['pr_comments'] = ret
     return ret
+
+  def create_comment(self, issue_number, comment):
+    data = { 'body': comment }
+    return self.call('create_issue_comment', owner=self._owner, repo=self._repo, number=issue_number, data=data)
 
   def get_pr_commits(self, branch_name):
     ret = self._cache.get('pr_commits')
