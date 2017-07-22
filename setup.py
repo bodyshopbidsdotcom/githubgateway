@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-current_version = '0.8'
+current_version = '0.9'
 
 setup(
   name = 'githubgateway',
