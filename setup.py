@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-current_version = '0.9'
+current_version = '0.10'
 
 setup(
   name = 'githubgateway',
@@ -13,7 +13,7 @@ setup(
   download_url = 'https://github.com/bodyshopbidsdotcom/githubgateway/tarball/%s' % current_version,
   keywords = ['api', 'gateway', 'http', 'REST'],
   install_requires = [
-    'basegateway==0.10'
+    'basegateway==0.12'
   ],
   classifiers = [
     "Topic :: Internet :: WWW/HTTP",

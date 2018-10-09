@@ -109,7 +109,12 @@ class GithubAPIGateway(APIGateway):
         'path': '/repos/{owner}/{repo}/pulls/{number}/merge',
         'method': 'PUT',
         'valid_status': [200]
-      }
+      },
+      'repo_details': {
+        'path': '/repos/{owner}/{repo}',
+        'method': 'GET',
+        'valid_status': [200, 404]
+      },
     }
     self._common_headers = {
       'Authorization': 'token {0}'.format(token)
@@ -281,3 +286,6 @@ class GithubAPIGateway(APIGateway):
       return self.call('remove_all_labels_from_issue', owner=self._owner, repo=self._repo, number=issue_number)
     else:
       return self.call('remove_label_from_issue', owner=self._owner, repo=self._repo, number=issue_number, name=label)
+
+  def get_repo_details(self):
+    return self.call('repo_details', owner=self._owner, repo=self._repo)[0]
